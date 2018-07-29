@@ -8,8 +8,8 @@ describe "transient attributes" do
       factory :user do
         transient do
           four     { 2 + 2 }
-          rockstar true
-          upcased  false
+          rockstar { true }
+          upcased  { false }
         end
 
         name  { "#{FactoryBot.generate(:name)}#{" - Rockstar" if rockstar}" }
@@ -71,7 +71,7 @@ describe "transient attributes" do
       FactoryBot.define do
         factory :user_using_ignore, class: User do
           ignore do
-            honorific "Esteemed"
+            honorific { "Esteemed" }
           end
 
           name { "#{honorific} Jane Doe" }
