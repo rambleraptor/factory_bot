@@ -39,16 +39,8 @@ module FactoryBot
     #   generated instances.
     # * value: +Object+
     #   If no block is given, this value will be used for this attribute.
-    def add_attribute(name, value = nil, &block)
-      raise AttributeDefinitionError, 'Both value and block given' if value && block_given?
-
-      declaration = if block_given?
-        Declaration::Dynamic.new(name, @ignore, block)
-      else
-        warn_static_attribute_deprecation(name, value)
-        Declaration::Static.new(name, value, @ignore)
-      end
-
+    def add_attribute(name, &block)
+      declaration = Declaration::Dynamic.new(name, @ignore, block)
       @definition.declare_attribute(declaration)
     end
 
@@ -67,13 +59,13 @@ module FactoryBot
     # attribute, so that:
     #
     #   factory :user do
-    #     name 'Billy Idol'
+    #     name { 'Billy Idol' }
     #   end
     #
     # and:
     #
     #   factory :user do
-    #     add_attribute :name, 'Billy Idol'
+    #     add_attribute(:name) { 'Billy Idol' }
     #   end
     #
     # are equivalent.
@@ -95,12 +87,12 @@ module FactoryBot
     #
     # are equivalent.
     def method_missing(name, *args, &block)
-      if args.empty? && block.nil?
-        @definition.declare_attribute(Declaration::Implicit.new(name, @definition, @ignore))
+      if args.empty?
+        __declare_attribute__(name, block)
       elsif args.first.respond_to?(:has_key?) && args.first.has_key?(:factory)
         association(name, *args)
       else
-        add_attribute(name, *args, &block)
+        super(name, *args, &block)
       end
     end
 
@@ -176,28 +168,13 @@ module FactoryBot
 
     private
 
-    def warn_static_attribute_deprecation(name, value)
-      attribute_caller = caller(2)
-
-      if attribute_caller[0].include?("method_missing")
-        attribute_caller = caller(3)
+    def __declare_attribute__(name, block)
+      if block.nil?
+        declaration = Declaration::Implicit.new(name, @definition, @ignore)
+        @definition.declare_attribute(declaration)
+      else
+        add_attribute(name, &block)
       end
-
-      ActiveSupport::Deprecation.warn(<<-MSG, attribute_caller)
-Static attributes will be removed in FactoryBot 5.0. Please use dynamic
-attributes instead by wrapping the attribute value in a block:
-
-#{name} { #{value.inspect} }
-
-To automatically update from static attributes to dynamic ones,
-install rubocop-rspec and run:
-
-rubocop \\
-  --require rubocop-rspec \\
-  --only FactoryBot/AttributeDefinedStatically \\
-  --auto-correct
-
-      MSG
     end
   end
 end
