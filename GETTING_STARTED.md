@@ -180,19 +180,9 @@ user.first_name
 Static Attributes
 ------------------
 
-Static attributes, without a block, are deprecated and will be removed in
-factory\_bot 5. You can read more about the deprecation
-[here](https://robots.thoughtbot.com/deprecating-static-attributes-in-factory_bot-4-11).
-
-```ruby
-factory :user do
-  # Do not use deprecated static attributes
-  admin true
-
-  # Use dynamic attributes instead
-  admin { true }
-end
-```
+Static attributes (without a block) are no longer available in factory\_bot 5.
+You can read more about the decision to remove them in
+[this blog post](https://robots.thoughtbot.com/deprecating-static-attributes-in-factory_bot-4-11).
 
 Aliases
 -------
